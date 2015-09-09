@@ -1,45 +1,32 @@
 import web
-import json
 
+urls = ('/', 'fibsvc')
 
-def notfound():
-    #return web.notfound("Sorry, the page you were looking for was not found.")
-    return json.dumps({'ok':0, 'errcode': 404})
+app = web.application(urls, globals(), True)
 
-def internalerror():
-    #return web.internalerror("Bad, bad server. No donut for you.")
-    return json.dumps({'ok':0, 'errcode': 500})
+def fibonacci(n):
+    c = [];
+    a, b = 0, 1
+    for i in range(n):
+        a, b = b, a + b
+        c.append(a)
+    return c
 
-def returnFibonacci(n):
-    a,b = 1,1
-    for i in range(n-1):
-        a,b = b,a+b
-    return a
+class fibsvc:
+   def GET(self):
+        i = web.input(num = 'web')
+        try:
+            # insure that the user submitted an integer, not a character or a word
+            j = int(i.num)
+        except ValueError:
+            return "ERROR: Character submitted, please input a positive integer"
 
-urls = (
-    '/(.*)', 'handleRequest',
-)
-
-
-app = web.application(urls, globals())
-app.notfound = notfound
-app.internalerror = internalerror
-
-
-class handleRequest:
-    def GET(self, method_id):
-        if not method_id:
-            return web.notfound()
+        if j > 0:
+            # insure that the user submitted a positive number
+            fib = fibonacci(j)
+            return web.websafe(fib)
         else:
-            fib=returnFibonacci(method_id)
-            return json.dumps({'ok': '1'})
-
-    def POST(self):
-        i = web.input()
-        data = web.data() # you can get data use this method
-        #print data
-        print returnFibonacci(5)
-        pass
+            return "ERROR: Please input a positive integer"
 
 if __name__ == "__main__":
     app.run()
